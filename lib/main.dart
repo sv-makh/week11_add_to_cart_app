@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: const ProductsScreen()
     );
   }
@@ -36,16 +37,24 @@ class ProductsView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Shopping App'),
+        actions: [
+          BlocBuilder<ProductsBloc, ProductsState>(
+            builder: (context, ProductsState productsState) {
+              return IconButton(
+                onPressed: () {},
+                icon: _cartWithBadge(context, productsState.inCartValue)
+              );
+            }
+          ),
+        ],
       ),
       body: Column(
         children: [
-          BlocBuilder<ProductsBloc, ProductsState>(
-            builder: (context, ProductsState productsState) {
-              return Text('${productsState.inCartValue}');
-            }
-          ),
           ListTile(
-            leading: FlutterLogo(),
+            leading: Icon(
+              Icons.flourescent_rounded,
+              color: Colors.deepOrange,
+            ),
             title: Text('Product 0'),
             trailing: GestureDetector(
               child: Icon(Icons.shopping_cart_outlined),
@@ -53,7 +62,10 @@ class ProductsView extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: FlutterLogo(),
+            leading: Icon(
+              Icons.flourescent_rounded,
+              color: Colors.deepOrange,
+            ),
             title: Text('Product 1'),
             trailing: GestureDetector(
               child: Icon(Icons.shopping_cart_outlined),
@@ -79,4 +91,33 @@ class ProductsBloc extends Bloc<CartTap, ProductsState> {
       emitter(ProductsState(state.inCartValue + 1))
     );
   }
+}
+
+Widget _cartWithBadge(BuildContext context, int number) {
+  return InkWell(
+    child: Container(
+      width: 60,
+      //height: 20,
+      //padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(children: [
+            SizedBox(height: 10),
+            Icon(Icons.shopping_cart)
+          ]),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+              alignment: Alignment.center,
+              child: Text('$number', style: TextStyle(fontSize: 12),),
+            ),
+          )
+        ],
+      ),
+    )
+  );
 }
