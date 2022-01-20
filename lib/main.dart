@@ -41,21 +41,42 @@ class ProductsView extends StatelessWidget {
         children: [
           BlocBuilder<ProductsBloc, ProductsState>(
             builder: (context, ProductsState productsState) {
-              return Text('$productsState.inCartValue');
+              return Text('${productsState.inCartValue}');
             }
           ),
           ListTile(
             leading: FlutterLogo(),
             title: Text('Product 0'),
-            trailing: Icon(Icons.shopping_cart_outlined),
+            trailing: GestureDetector(
+              child: Icon(Icons.shopping_cart_outlined),
+              onTap: () => context.read<ProductsBloc>().add(CartTap()),
+            ),
           ),
           ListTile(
             leading: FlutterLogo(),
             title: Text('Product 1'),
-            trailing: Icon(Icons.shopping_cart_outlined),
+            trailing: GestureDetector(
+              child: Icon(Icons.shopping_cart_outlined),
+              onTap: () => context.read<ProductsBloc>().add(CartTap()),
+            ),
           ),
         ],
       )
+    );
+  }
+}
+
+class CartTap {}
+
+class ProductsState {
+  final int inCartValue;
+  const ProductsState(this.inCartValue);
+}
+
+class ProductsBloc extends Bloc<CartTap, ProductsState> {
+  ProductsBloc() : super(const ProductsState(0)) {
+    on<CartTap>((CartTap event, Emitter<ProductsState> emitter) =>
+      emitter(ProductsState(state.inCartValue + 1))
     );
   }
 }
