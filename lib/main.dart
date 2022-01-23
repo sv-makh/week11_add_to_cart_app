@@ -38,7 +38,18 @@ class ProductsView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Shopping App'),
         actions: [
-          BlocBuilder<ProductsBloc, ProductsState>(
+          BlocConsumer<ProductsBloc, ProductsState>(
+            listenWhen: (ProductsState previous, ProductsState current) {
+              if (current.addedToCart == true) {
+                return true;
+              } else {
+                return false;
+              }
+            },
+            listener: (context, ProductsState state) {
+              final snackBar = SnackBar(content: Text("Product was added to a cart"));
+              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            },
             builder: (context, ProductsState productsState) {
               return IconButton(
                 onPressed: () {},
@@ -58,7 +69,7 @@ class ProductsView extends StatelessWidget {
             title: Text('Product 0'),
             trailing: GestureDetector(
               child: Icon(Icons.shopping_cart_outlined),
-              onTap: () => context.read<ProductsBloc>().add(CartTap()),
+              onTap: () => context.read<ProductsBloc>().add(ProductsAdded()),
             ),
           ),
           ListTile(
@@ -69,7 +80,7 @@ class ProductsView extends StatelessWidget {
             title: Text('Product 1'),
             trailing: GestureDetector(
               child: Icon(Icons.shopping_cart_outlined),
-              onTap: () => context.read<ProductsBloc>().add(CartTap()),
+              onTap: () => context.read<ProductsBloc>().add(ProductsAdded()),
             ),
           ),
         ],
@@ -78,17 +89,20 @@ class ProductsView extends StatelessWidget {
   }
 }
 
-class CartTap {}
+class ProductsEvent {}
+
+class ProductsAdded extends ProductsEvent {}
 
 class ProductsState {
   final int inCartValue;
-  const ProductsState(this.inCartValue);
+  final bool addedToCart;
+  ProductsState({required this.inCartValue, this.addedToCart = false});
 }
 
-class ProductsBloc extends Bloc<CartTap, ProductsState> {
-  ProductsBloc() : super(const ProductsState(0)) {
-    on<CartTap>((CartTap event, Emitter<ProductsState> emitter) =>
-      emitter(ProductsState(state.inCartValue + 1))
+class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
+  ProductsBloc() : super(ProductsState(inCartValue: 0)) {
+    on<ProductsAdded>((ProductsEvent event, Emitter<ProductsState> emitter) =>
+      emitter(ProductsState(inCartValue: state.inCartValue + 1, addedToCart: true))
     );
   }
 }
@@ -97,8 +111,6 @@ Widget _cartWithBadge(BuildContext context, int number) {
   return InkWell(
     child: Container(
       width: 60,
-      //height: 20,
-      //padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Stack(
         alignment: Alignment.center,
         children: [
