@@ -41,6 +41,8 @@ class ProductsView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Shopping App'),
         actions: [
+          //если продукт был добавлен в корзину,
+          //показывается сообщение, предусмотренное соответствующим событием
           BlocConsumer<ProductsBloc, ProductsState>(
             listenWhen: (ProductsState previous, ProductsState current) {
               if (current.cartInteraction == true) {
@@ -56,12 +58,14 @@ class ProductsView extends StatelessWidget {
             builder: (context, ProductsState productsState) {
               return IconButton(
                 onPressed: () {},
+                //иконка тележки с количеством добавленных продуктов
                 icon: _cartWithBadge(context, productsState.inCartValue)
               );
             }
           ),
         ],
       ),
+      //список ListTile с продуктами
       body: ListView.builder(
         itemCount: numOfProducts,
         itemBuilder: ((BuildContext context, int index) {
@@ -70,11 +74,17 @@ class ProductsView extends StatelessWidget {
                 return ListTile(
                   leading: Icon(
                     Icons.flourescent_rounded,
+                    //цвета иконок слева продуктов меняются по списку Colors.primaries
+                    //если продуктов больше, чем цветов в списке, цвета идут заново
                     color: Colors.primaries[index % Colors.primaries.length],
                   ),
                   title: Text('Product $index'),
                   trailing: GestureDetector(
-                    child: Icon((productsState.productsList)[index] ? Icons.shopping_cart : Icons.shopping_cart_outlined),
+                    //иконки справа продуктов и действия по тапу на них
+                    //зависят от того, находится ли продукт index в корзине
+                    child: Icon((productsState.productsList)[index]
+                        ? Icons.shopping_cart
+                        : Icons.shopping_cart_outlined),
                     onTap: () {
                       if ((productsState.productsList)[index]) {
                         context.read<ProductsBloc>().add(ProductsDeleted(index: index));
@@ -92,6 +102,8 @@ class ProductsView extends StatelessWidget {
   }
 }
 
+//иконка тележки с количеством добавленных продуктов number
+//number показывается в красном бейдже сверху справа
 Widget _cartWithBadge(BuildContext context, int number) {
   return InkWell(
     child: Container(
