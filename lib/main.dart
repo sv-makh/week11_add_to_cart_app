@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:week11_add_to_cart_app/constants.dart';
 
 void main() {
   runApp(const MyApp());
@@ -61,28 +62,50 @@ class ProductsView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          ListTile(
-            leading: Icon(
-              Icons.flourescent_rounded,
-              color: Colors.deepOrange,
-            ),
-            title: Text('Product 0'),
-            trailing: GestureDetector(
-              child: Icon(Icons.shopping_cart_outlined),
-              onTap: () => context.read<ProductsBloc>().add(ProductsAdded()),
-            ),
+          BlocBuilder<ProductsBloc, ProductsState>(
+            builder: (context, ProductsState productsState) {
+              return ListTile(
+                leading: Icon(
+                  Icons.flourescent_rounded,
+                  color: Colors.deepOrange,
+                ),
+                title: Text('Product 0'),
+                trailing: GestureDetector(
+                  child: Icon((productsState.productsList)[0] ? Icons.shopping_cart : Icons.shopping_cart_outlined),
+                  onTap: () {
+                    if ((productsState.productsList)[0]) {
+                      context.read<ProductsBloc>().add(ProductsDeleted(index: 0));
+                    } else {
+                      context.read<ProductsBloc>().add(ProductsAdded(index: 0));
+                    }
+                    print(productsState.productsList.toString());
+                  },
+                ),
+              );
+            }
           ),
-          ListTile(
-            leading: Icon(
-              Icons.flourescent_rounded,
-              color: Colors.deepOrange,
-            ),
-            title: Text('Product 1'),
-            trailing: GestureDetector(
-              child: Icon(Icons.shopping_cart_outlined),
-              onTap: () => context.read<ProductsBloc>().add(ProductsAdded()),
-            ),
-          ),
+          BlocBuilder<ProductsBloc, ProductsState>(
+          builder: (context, ProductsState productsState) {
+            return ListTile(
+              leading: Icon(
+                Icons.flourescent_rounded,
+                color: Colors.deepOrange,
+              ),
+              title: Text('Product 1'),
+              trailing: GestureDetector(
+                child: Icon((productsState.productsList)[1] ? Icons.shopping_cart : Icons.shopping_cart_outlined),
+                onTap: () {
+                  if ((productsState.productsList)[1]) {
+                    context.read<ProductsBloc>().add(ProductsDeleted(index: 1));
+                  } else {
+                    context.read<ProductsBloc>().add(ProductsAdded(index: 1));
+                  }
+                  print(productsState.productsList.toString());
+                }
+              ),
+            );
+          }),
+
         ],
       )
     );
@@ -91,19 +114,49 @@ class ProductsView extends StatelessWidget {
 
 class ProductsEvent {}
 
-class ProductsAdded extends ProductsEvent {}
+class ProductsAdded extends ProductsEvent {
+  int index;
+  ProductsAdded({required this.index});
+}
+
+class ProductsDeleted extends ProductsEvent {
+  int index;
+  ProductsDeleted({required this.index});
+}
 
 class ProductsState {
   final int inCartValue;
   final bool addedToCart;
-  ProductsState({required this.inCartValue, this.addedToCart = false});
+  final List<bool> productsList;
+
+  ProductsState({
+    required this.inCartValue,
+    this.addedToCart = false,
+    productsList
+  }) : productsList = productsList ?? List<bool>.filled(numOfProducts, false);
 }
 
 class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   ProductsBloc() : super(ProductsState(inCartValue: 0)) {
-    on<ProductsAdded>((ProductsEvent event, Emitter<ProductsState> emitter) =>
-      emitter(ProductsState(inCartValue: state.inCartValue + 1, addedToCart: true))
-    );
+    on<ProductsAdded>((ProductsAdded event, Emitter<ProductsState> emitter) {
+      List<bool> list = state.productsList;
+      list[event.index] = true;
+      return emitter(ProductsState(
+          inCartValue: state.inCartValue + 1,
+          addedToCart: true,
+          productsList: list
+      ));
+    });
+
+    on<ProductsDeleted>((ProductsDeleted event, Emitter<ProductsState> emitter) {
+      List<bool> list = state.productsList;
+      list[event.index] = false;
+      return emitter(ProductsState(
+        inCartValue: state.inCartValue - 1,
+        addedToCart: true,
+        productsList: list
+      ));
+    });
   }
 }
 
