@@ -41,14 +41,14 @@ class ProductsView extends StatelessWidget {
         actions: [
           BlocConsumer<ProductsBloc, ProductsState>(
             listenWhen: (ProductsState previous, ProductsState current) {
-              if (current.addedToCart == true) {
+              if (current.cartInteraction == true) {
                 return true;
               } else {
                 return false;
               }
             },
             listener: (context, ProductsState state) {
-              final snackBar = SnackBar(content: Text("Product was added to a cart"));
+              final snackBar = SnackBar(content: Text(state.cartEventMsg));
               ScaffoldMessenger.of(context).showSnackBar(snackBar);
             },
             builder: (context, ProductsState productsState) {
@@ -78,7 +78,6 @@ class ProductsView extends StatelessWidget {
                     } else {
                       context.read<ProductsBloc>().add(ProductsAdded(index: 0));
                     }
-                    print(productsState.productsList.toString());
                   },
                 ),
               );
@@ -100,7 +99,6 @@ class ProductsView extends StatelessWidget {
                   } else {
                     context.read<ProductsBloc>().add(ProductsAdded(index: 1));
                   }
-                  print(productsState.productsList.toString());
                 }
               ),
             );
@@ -126,12 +124,14 @@ class ProductsDeleted extends ProductsEvent {
 
 class ProductsState {
   final int inCartValue;
-  final bool addedToCart;
+  final bool cartInteraction;
+  final String cartEventMsg;
   final List<bool> productsList;
 
   ProductsState({
     required this.inCartValue,
-    this.addedToCart = false,
+    this.cartInteraction = false,
+    this.cartEventMsg = '',
     productsList
   }) : productsList = productsList ?? List<bool>.filled(numOfProducts, false);
 }
@@ -143,7 +143,8 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
       list[event.index] = true;
       return emitter(ProductsState(
           inCartValue: state.inCartValue + 1,
-          addedToCart: true,
+          cartInteraction: true,
+          cartEventMsg: 'Product was added',
           productsList: list
       ));
     });
@@ -153,7 +154,8 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
       list[event.index] = false;
       return emitter(ProductsState(
         inCartValue: state.inCartValue - 1,
-        addedToCart: true,
+        cartInteraction: true,
+        cartEventMsg: 'Product was deleted',
         productsList: list
       ));
     });
